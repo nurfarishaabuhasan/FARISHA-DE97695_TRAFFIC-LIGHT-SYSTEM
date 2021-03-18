@@ -1,0 +1,121 @@
+//  Setup Variables for Station 1 Traffic Light Components
+ int RedLED1 = 7;
+ int YellowLED1 = 6;
+ int GreenLED1 = 5;
+
+//  Setup Variables for Station 2 Traffic Light Components
+
+int RedLED2 = 4;
+int YellowLED2 = 3;
+int GreenLED2 = 2;
+
+//  Setup Variables for Station 3 Traffic Light Components
+ int RedLED3 = 13;
+ int YellowLED3 = 12;
+ int GreenLED3 = 11;
+
+// Setup Variables for Walk Cycle Pedestrian Components.
+  
+ int WalkRequest = 0;  // Variable used to store the state of the Walk Push Button
+ int WalkButton = 8;
+ int RedPedLED = 9;
+ int WhitePedLED = 10;
+
+// variables that will change:
+volatile int buttonState = 0;  
+
+
+void setup() 
+{
+  
+  pinMode(RedLED1, OUTPUT);
+  pinMode(YellowLED1, OUTPUT);
+  pinMode(GreenLED1, OUTPUT);
+  pinMode(RedLED2, OUTPUT);
+  pinMode(YellowLED2, OUTPUT);
+  pinMode(GreenLED2, OUTPUT);
+  pinMode(RedLED3, OUTPUT);
+  pinMode(YellowLED3, OUTPUT);
+  pinMode(GreenLED3, OUTPUT);  
+  pinMode(WalkButton, INPUT);  //  Sets Push Button as INPUT
+  
+  attachInterrupt(0, pin_ISR, CHANGE); 
+  
+  // Set Initial state of all red LED to HIGH
+  digitalWrite (RedLED1, HIGH);
+  digitalWrite (RedLED2, HIGH);
+  digitalWrite (RedLED3, HIGH);
+  digitalWrite (RedPedLED, HIGH);
+}
+
+void loop() {
+
+  // put your main code here, to run repeatedly:
+
+  // Station 1 Timing
+  delay(5000);  //  5 milliseconds of Red
+  digitalWrite(RedLED1, LOW);  //  Sets Red OFF Green ON
+  digitalWrite(GreenLED1, HIGH);
+  delay(10000);  // 10 milliseconds of Green
+  digitalWrite(GreenLED1, LOW);  //  Sets Green OFF Yellow ON
+  digitalWrite(YellowLED1, HIGH);
+  delay(5000);  // 5 milliseconds of Yellow
+  digitalWrite(YellowLED1, LOW);  //  Sets Yellow OFF Red ON
+  digitalWrite(RedLED1, HIGH);
+  
+  if (WalkRequest == 1) {  //  If the button has been pressed
+    WalkCycle();  //  Exit main loop and run WalkCycle () function
+  }
+
+ // Station 2 Timing
+  delay(5000);  //  5 milliseconds of Red
+  digitalWrite(RedLED2, LOW); 
+  digitalWrite(GreenLED2, HIGH);  //  Sets Red OFF Green ON
+  delay(10000);  // 10 milliseconds of Green
+  digitalWrite(GreenLED2, LOW);
+  digitalWrite(YellowLED2, HIGH);  //  Sets Green OFF Yellow ON
+  delay(5000);  // 5 milliseconds of Yellow
+  digitalWrite(YellowLED2, LOW); 
+  digitalWrite(RedLED2, HIGH);  //  Sets Yellow OFF Red ON
+  
+  if (WalkRequest == 1) {  //  If the button has been pressed
+    WalkCycle();  //  Exit main loop and run WalkCycle () function
+  } 
+// Station 3 Timing
+  delay(5000);  //  5 milliseconds of Red
+  digitalWrite(RedLED3, LOW); 
+  digitalWrite(GreenLED3, HIGH);  //  Sets Red3 OFF Green ON
+  delay(10000);  // 10 milliseconds of Green
+  digitalWrite(GreenLED3, LOW); 
+  digitalWrite(YellowLED3, HIGH);  //  Sets Green3 OFF Yellow ON
+  delay(5000);  // 5 milliseconds of Yellow
+  digitalWrite(YellowLED3, LOW); 
+  digitalWrite(RedLED3, HIGH);  //  Sets Yellow OFF Red ON
+
+  if (WalkRequest == 1) {  //  If the button has been pressed
+    WalkCycle();  //  Exit main loop and run WalkCycle () function
+  }
+} 
+  
+void WalkCycle() {
+  delay(4000);  //  4 millisecond delay before "WALK" begins
+  digitalWrite (WhitePedLED, HIGH); digitalWrite (RedPedLED, LOW);  // Turn on White Pedestrian Light
+  delay (15000);  // 15 Second delay to allow crossing street
+  digitalWrite (WhitePedLED, LOW); digitalWrite(WalkButton, LOW);  // Turn off White Pedestrian Light
+  delay(250);
+  for (int x = 0; x < 5; x++) {  // Flash White Ped LED 5X
+    digitalWrite(WhitePedLED, HIGH);
+    delay(250);
+    digitalWrite(WhitePedLED, LOW);
+    delay(250);
+  } 
+  digitalWrite(RedPedLED, HIGH);
+  WalkRequest = 0; //  Reset Push Button
+  asm volatile ("  jmp 0");  // Soft-reset of sketch. Makes sure Station 1 "MAIN" always gets Green after a walk cycle
+ }
+    
+  void pin_ISR() {
+  buttonState = digitalRead(WalkButton);
+  (WalkRequest = 1);  //  Walk button has been pressed
+  // digitalWrite(WhitePedLED, buttonState);  // Test Light for Interrupt use only during testing!
+}
